@@ -1,12 +1,13 @@
 using System.Numerics;
 using System.Text;
+using Microsoft.AspNetCore.Components;
 
 namespace AlgoritmiUPrimjeniRSA
 {
     public static class RSA
     {
-        public static KeyPair GenerateKeyPair() => GenerateKeyPair(2048);
-        public static KeyPair GenerateKeyPair(int bitlenght)
+        //public static KeyPair GenerateKeyPair() => GenerateKeyPair(2048);
+        public static KeyPair GenerateKeyPair(int bitlenght, ref BigInteger Q_, ref BigInteger P_, ref BigInteger N_, ref BigInteger PHI_, ref BigInteger D_)
         {
             // Generating two primes, checking if the GCD of (n-1)(p-1) and e is 1.
             BigInteger q, p, n, phi, d = new();
@@ -27,6 +28,12 @@ namespace AlgoritmiUPrimjeniRSA
 
             // Computing D such that DE = 1 mod phi.
             d = Maths.ModularInverse(0x10001, phi);
+
+            P_ = p;
+            Q_ = q;
+            N_ = n;
+            PHI_ = phi;
+            D_ = d;
 
             // Returning the key pair.
             return KeyPair.Generate(n, d);
@@ -82,10 +89,15 @@ namespace AlgoritmiUPrimjeniRSA
         }
 
 
-        public static string Encrypt(string text, Key key)
+        public static string Encrypt(string text, Key key, ref string byteRAZOR)
         {
             // Converting the text to bytes.
             byte[] bytes = Encoding.ASCII.GetBytes(text);
+
+            foreach (var b in bytes)
+            {
+                byteRAZOR += b.ToString();
+            }
 
             // Encrypting the bytes.
             byte[] encrypted = EncryptBytes(bytes, key);

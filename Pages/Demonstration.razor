@@ -1,10 +1,95 @@
+@using AlgoritmiUPrimjeniRSA
+@using System.Numerics;
+@inject NavigationManager NavigationManager
 @page "/demo"
 
 <PageTitle>AUP project</PageTitle>
 
-<h1>RSA demonstration</h1>
+<div class="main-container">
+    <h1>RSA demonstration</h1>
+    <div id="forma">
+        <label for="plaintext">Type text you want to encrypt:</label>
+        <input type="text" name="plaintext" id="" @bind="plaintext">
+        <button @onclick="Step">Encrypt</button>
+    </div><hr id="line">
+    <div id="first-step">
+        <h2>STEP 1</h2>
+        <div class="step-block">
+            <p class="step">1.1) Find two large prime numbers <span class="highlight">P</span> and <span class="highlight">Q</span>.</p>
+            <span><b>P =</b> @P</span>
+            <span><b>Q =</b> @Q</span>
+        </div>
+        <div class="step-block">
+            <p class="step">1.2) Calculate <span class="highlight">N = P * Q</span>.</p>
+            <span><b>n = </b>@N</span>
+        </div>
+        <div class="step-block">
+            <p class="step">1.3) Calculate <span class="highlight">&Phi;(N) = (P - 1)*(Q - 1)</span>.</p>
+            <span><b>&Phi; =</b> @phi</span>
+        </div>
+        <div class="step-block">
+            <p class="step">1.4) Choose e such that <span class="highlight">1 &#60; e &#60; &Phi;</span> and e and N are coprime.</p>
+            <span><b>e =</b> @e</span>
+        </div>
+        <div class="step-block">
+            <p class="step">1.5) Compute a value for d such that <span class="highlight">(d * e) % &Phi;(N) = 1</span>.</p>
+            <span><b>d =</b> @d</span>
+        </div>
+
+        <div id="keys-container">
+            <div class="key">
+                <span>PUBLIC KEY</span><hr>
+                <span>n, e = @e</span>
+            </div>
+            <div class="key">
+                <span>PRIVATE KEY</span><hr>
+                <span>n, d</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="second-step">
+        <h2>STEP 2</h2>
+        <div class="step-block">
+            <p class="step">2.1) Encode characters from the entered plaintext into a sequence of bytes.</p>
+            <span><b>Plaintext:</b> @plaintext</span>
+            <span><b>Byte sequence:</b> @bytes</span>
+        </div>
+        <div class="step-block">
+            <p class="step">2.2) Encrypt plaintext P into cyphertext C: <span class="highlight">C = P<sup>d</sup> % N</span></p>
+            <span><b>Cyphertext:</b> @cyphertext</span>
+        </div>
+    </div>
+
+    <div id="third-step">
+        <h2>STEP 3</h2>
+        <div class="step-block">
+            <p class="step">3.1) Decrypt cyphertext C into plaintext P: <span class="highlight">P = C<sup>d</sup> % N</span></p>
+            <span><b>Decrypthed text:</b> @decrypted</span>
+        </div>
+    </div>
+
+</div>
+
 
 
 @code {
+    private BigInteger Q, P, N, phi, d;
+    private KeyPair? keyPair;
+    private int e;
+    private string plaintext = "";
+    private string bytes = "";
+    private string cyphertext = "";
+    private string decrypted = "";
+
+
+    private void Step()
+    {
+        keyPair = RSA.GenerateKeyPair(512, ref Q, ref P, ref N, ref phi, ref d);
+        e = keyPair.publicKey.e;
+        
+        cyphertext = RSA.Encrypt(plaintext, keyPair.publicKey, ref bytes);
     
+        decrypted = RSA.Decrypt(cyphertext, keyPair.privateKey);
+    }
 }
