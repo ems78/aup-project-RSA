@@ -70,22 +70,6 @@ namespace AlgoritmiUPrimjeniRSA
 
 
         /// <summary>
-        /// Vraća najveći zajednički djelitelj oba zadanog BigInt-a.
-        /// </summary>
-        /// <returns>NZD(a, b)</returns>
-        public static BigInteger GCD(BigInteger a, BigInteger b)
-        {
-            // Iterirati dok su brojevi različiti od nule.
-            while (a != 0 && b != 0)
-            {
-                if (a > b) a %= b;
-                else b %= a;
-            }
-
-            return a == 0 ? b : a; 
-        }
-
-        /// <summary>
         /// Izvodi modularni inverz na u i v,
         /// tako da je d = NZD(u,v);
         /// </summary>

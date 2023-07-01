@@ -24,15 +24,5 @@ namespace AlgoritmiUPrimjeniRSA
             n += amt;
             randomBytes = n.ToByteArray();
         }
-
-        /// <summary>
-        /// Dekrementira byte array kao cjelinu, za zadanu količinu. (little endian).
-        /// </summary>
-        public static void DecrementByteArrayLE(ref byte[] randomBytes, int amt)
-        {
-            BigInteger n = new(randomBytes);
-            n -= amt;
-            randomBytes = n.ToByteArray();
-        }
     }
 }

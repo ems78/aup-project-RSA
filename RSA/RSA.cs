@@ -71,10 +71,9 @@ namespace AlgoritmiUPrimjeniRSA
                     // Postavljanje gornjeg bita za unsigned, stvaranje gornje i donje granice.
                     upper_limit[randomBytes.Length - 1] = 0x0;
                     BigInteger upper_limit_bi = new(upper_limit);
-                    BigInteger lower_limit = upper_limit_bi - 20;
                     BigInteger current = new(randomBytes);
 
-                    if (lower_limit < current && current < upper_limit_bi)
+                    if (current < upper_limit_bi)
                     {
                         // Nije uspjelo pronaći primarni broj, vraća -1.
                         // Dosegnuta granica bez rješenja.
