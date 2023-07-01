@@ -1,39 +1,111 @@
 @using AlgoritmiUPrimjeniRSA
 @using System.Numerics;
 @inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
 @page "/demo"
 
 <PageTitle>AUP project</PageTitle>
 
 <div class="main-container">
-    <h1>RSA demonstration</h1>
+    <h1>RSA demonstracija</h1>
     <div id="forma">
-        <label for="plaintext">Type text you want to encrypt:</label>
-        <input type="text" name="plaintext" id="" @bind="plaintext">
-        <button @onclick="Step">Encrypt</button>
+        <label for="plaintext">Upišite tekst:</label>
+        <input type="text" name="plaintext" id="unos" @bind="plaintext" maxlength="60">
+        <button @onclick="Check">Pokreni</button>
     </div><hr id="line">
     <div id="first-step">
-        <h2>STEP 1</h2>
+        <h2>1. GENERIRANJE KLJUČEVA</h2>
         <div class="step-block">
-            <p class="step">1.1) Find two large prime numbers <span class="highlight">P</span> and <span class="highlight">Q</span>.</p>
+            <p class="step">1.1) Pronađi dva velika primarna broja <span class="highlight">P</span> i <span class="highlight">Q</span>.</p>
             <span><b>P =</b> @P</span>
             <span><b>Q =</b> @Q</span>
+            <p class="info">
+                Primarni brojevi su brojevi koji su djeljivi samo sa 1 i samim sobom. 
+                Moraju biti jako veliki kako bi se otežalo faktoriziranje broja N.
+                U ovom koraku se prvo generira veliki broj tako da se popuni niz sa 
+                nasumičnim byteovima pomoću svojstva koje vraća broj milisekundi koje su 
+                prošle od pokretanja sustava. Zatim se tome nizu byteova zadnji byte postavlja 
+                na 0x0, čime se osigurava da je broj pozitivan (unsigned). Postavlja se 
+                najniži bit prvog bytea u nizu byteova na 1 što osigurava da je broj neparan.  
+                Najviši i drugi najviši bit predzadnjeg bajta se isto postavljaju na 1. 
+                Ovo se radi kako bi se osiguralo da je broj dovoljno velik, a time se 
+                osigurala i duljina generiranih ključeva i očuvala njihova snaga. 
+                Nakon toga slijedi Rabin-Miller test primarnosti. Ako broj nije primaran, 
+                postupak se ponavlja na način da se inkrementira za 2 postojeći broj do 
+                određenih granica, kako bi se prešlo na sljedeći neparan broj. Ako se dosegne 
+                granica bez pronalaska primarnog broja cijeli proces kreće ispočetka. 
+            </p>
+            <div class="more">
+                <p class="zelimznativise">Želim znati više</p>
+                <div class="hline"></div>
+                <p>
+                    Rabin-Miller test primarnosti je probabilistički algoritam koji se koristi 
+                    za određivanje je li broj primaran. Prvo se provjere neki osnovni uvjeti za 
+                    broj <b>n</b>, kao što je parnost ili je li manji od 2. Broj <b>d</b> se 
+                    postavlja kao <b>n - 1</b>, a broj <b>s</b> se postavlja na broj koliko je puta 
+                    <b>d</b> djeljiv s 2. Nakon toga se generira slučajan broj <b>2 &#60; a &#60; 
+                    (n - 2)</b>, i to k puta (parametar 'certainty'). Za svaki generirani slučajni faktor 
+                    <b>a</b> računa se vrijednost <b>x</b> kao <b>a^d mod n</b>. Ako je <b>x = 1</b> 
+                    ili <b>x = n - 1</b>, tada se prelazi na sljedeći slučajni faktor <b>a</b>. Ako 
+                    <b>x</b> nije jednak <b>n - 1</b> ni u jednoj iteraciji, tada se smatra 
+                    da je broj složen. Ako se niti jedan slučajni faktor ne pokaže kao dokaz 
+                    složenosti broja <b>n</b>, tada se broj <b>n</b> smatra primarnim. Budući da 
+                    je Rabin-Miller test probabilistički, postoji mala vjerojatnost da se krivo 
+                    identificira broj kao složeni ili primarni. Stoga se koristi parametar 
+                    'certainty' kako bi se povećala pouzdanost testa ponavljanjem testa više puta 
+                    s više različitih slučajnih faktora <b>a</b>. Što je veći parametar 'certainty', 
+                    to je veća vjerojatnost da je broj primaran. 
+                </p>
+                <p class="link">
+                    <a href="https://www.geeksforgeeks.org/primality-test-set-3-miller-rabin/" target="_blank">
+                        https://www.geeksforgeeks.org/primality-test-set-3-miller-rabin/
+                    </a><br>
+                    <a href="https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test" target="_blank">
+                       https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
+                    </a>
+                    
+                </p>
+            </div>
         </div>
         <div class="step-block">
-            <p class="step">1.2) Calculate <span class="highlight">N = P * Q</span>.</p>
+            <p class="step">1.2) Izračunaj <span class="highlight">N = P * Q</span>.</p>
             <span><b>n = </b>@N</span>
+            <p class="info">
+                Broj N se koristi za šifriranje i distribuira se kao javni ključ.
+            </p>
         </div>
         <div class="step-block">
-            <p class="step">1.3) Calculate <span class="highlight">&Phi;(N) = (P - 1)*(Q - 1)</span>.</p>
+            <p class="step">1.3) Izračunaj <span class="highlight">&Phi;(N) = (P - 1)*(Q - 1)</span>.</p>
             <span><b>&Phi; =</b> @phi</span>
+            <p class="info">
+                &Phi; (phi) predstavlja Eulerovu funkciju &Phi;(N) koja se koristi za izračun enkripcijskog 
+                eksponenta e i dekripcijskog eksponenta d. Vrijednost phi zapravo predstavlja broj prirodnih 
+                brojeva koji su manji od N i  relativno prosti s N. Koprimarni brojevi ili relativno prosti 
+                brojevi nemaju zajedničkog djelitelja osim 1.
+            </p>
         </div>
         <div class="step-block">
-            <p class="step">1.4) Choose e such that <span class="highlight">1 &#60; e &#60; &Phi;</span> and e and N are coprime.</p>
+            <p class="step">1.4) Odaberi e takav da je <span class="highlight">1 &#60; e &#60; &Phi;</span> i da su e i N koprimarni.</p>
             <span><b>e =</b> @e</span>
+            <p class="info">
+                U ovoj implementaciji se za e koristi broj 65537 (0x10001). Taj broj je odabran jer 
+                je on najmanji broj koji zadovoljava uvjete da je veći od 1, manji od phi i koprimaran 
+                s njim. Također je jedan od najčešće korištenih brojeva za e u RSA algoritmu. Poznat je 
+                još i kao Fermatov primarni broj. Dobar je odabir jer je relativno velik i rijedak, 
+                što otežava određivanje tajnog ključa na temelju javnog ključa. Vrijednost 0x10001 ima 
+                binarnu reprezentaciju koja se sastoji od samo nekoliko jedinica, što rezultira bržim 
+                izračunom potenciranja tijekom šifriranja i dešifriranja. Ne samo to, več mnoge kriptografske 
+                biblioteke i implementacije RSA algoritma koriste upravo ovu vrijednost za e, pa je i 
+                interoperabilnost s drugim implementacijama bolja.
+            </p>
         </div>
         <div class="step-block">
-            <p class="step">1.5) Compute a value for d such that <span class="highlight">(d * e) % &Phi;(N) = 1</span>.</p>
+            <p class="step">1.5) Izračunaj vrijednost za d takvu da vrijedi <span class="highlight">(d * e) % &Phi;(N) = 1</span>.</p>
             <span><b>d =</b> @d</span>
+            <p class="info">
+                D predstavlja tajni ključ i koristi se za dešifriranje poruka. Računa se kao modularni 
+                inverz od eksponenta e po modulu phi. 
+            </p>
         </div>
 
         <div id="keys-container">
@@ -49,23 +121,51 @@
     </div>
 
     <div id="second-step">
-        <h2>STEP 2</h2>
+        <h2>2. ENKRIPCIJA</h2>
         <div class="step-block">
-            <p class="step">2.1) Encode characters from the entered plaintext into a sequence of bytes.</p>
-            <span><b>Plaintext:</b> @plaintext</span>
-            <span><b>Byte sequence:</b> @bytes</span>
+            <p class="step">2.1) Pretvori znakove plaintext-a u niz bajtova.</p>
+            <span><b>(Uneseni tekst) Plaintext:</b> @plaintext</span>
+            <span><b>Byte sekvenca:</b> @bytesE</span>
+            <p class="info">
+                U ovom koraku tekst se pretvara u niz byteova koristeći ASCII kodiranje. 
+            </p>
         </div>
         <div class="step-block">
-            <p class="step">2.2) Encrypt plaintext P into cyphertext C: <span class="highlight">C = P<sup>d</sup> % N</span></p>
-            <span><b>Cyphertext:</b> @cyphertext</span>
+            <p class="step">2.2) Enkriptiraj plaintext M u cyphertext C: <span class="highlight">C = M<sup>e</sup> % N</span>.</p>
+            <span><b>(Šifrirani tekst) Cyphertext:</b> @cyphertext</span>
+            <p class="info">
+                Na niz bajtova dodaje se padding kako bi se spriječio gubitak podataka. Taj niz 
+                se zatim enkriptira tako da se potencira sa eksponentom e po modulu N.
+            </p>
+            <div class="more">
+                <p class="zelimznativise">Želim znati više</p>
+                <div class="hline"></div>
+                <p>
+                    U RSA kriptografiji, enkripcija se obično vrši nad blokovima na fiksne duljine. Kako bi 
+                    se osiguralo da duljina podataka koji se enkriptiraju odgovara očekivanoj duljini bloka, 
+                    koristi se padding. Padding je podatak određenih bajtova na kraju podatka kako bi se 
+                    postigla odgovarajuća duljina, u ovom slučaju se na podatak dodaju dva bytea. Na zadnji 
+                    byte se dodaje 0x00 kako bi se osiguralo dovoljno prostora za enkripciju i kako bi se 
+                    označio kraj podatka. Predzadnji byte se postavi na 0xFF i to se još zove 
+                    marker byte koji označava kraj podataka, odnosno mjesto gdje padding započinje.
+                </p>
+            </div>
         </div>
     </div>
 
     <div id="third-step">
-        <h2>STEP 3</h2>
+        <h2>3. DEKRIPCIJA</h2>
         <div class="step-block">
-            <p class="step">3.1) Decrypt cyphertext C into plaintext P: <span class="highlight">P = C<sup>d</sup> % N</span></p>
-            <span><b>Decrypthed text:</b> @decrypted</span>
+            <p class="step">3.1) Dekriptiraj cyphertext C u plaintext M: <span class="highlight">M = C<sup>d</sup> % N</span>.</p>
+            <span><b>Kriptirana byte sekvenca: </b>@bytesD</span>
+            <span><b>Dekriptirani tekst:</b> @decrypted</span>
+            <p class="info">
+                Prije nego što se započne dekriptiranje, enkriptirani tekst se pretvara iz Base64 
+                u niz byteova. Zatim se taj niz dekriptira pomoću n i d vrijednosti privatnog ključa 
+                tako da se potencira sa eksponentom d po modulu N. Sljedeći korak je uklanjanje 
+                paddinga sa dekriptiranog niza byteova koji se zatim pretvara u tekst koristeći 
+                ASCII kodiranje. Dobiveni tekst je ponovo razumljiv.
+            </p>
         </div>
     </div>
 
@@ -74,11 +174,13 @@
 
 
 @code {
+
     private BigInteger Q, P, N, phi, d;
     private KeyPair? keyPair;
     private int e;
     private string plaintext = "";
-    private string bytes = "";
+    private string bytesE = "";
+    private string bytesD = "";
     private string cyphertext = "";
     private string decrypted = "";
 
@@ -88,8 +190,18 @@
         keyPair = RSA.GenerateKeyPair(512, ref Q, ref P, ref N, ref phi, ref d);
         e = keyPair.publicKey.e;
         
-        cyphertext = RSA.Encrypt(plaintext, keyPair.publicKey, ref bytes);
+        cyphertext = RSA.Encrypt(plaintext, keyPair.publicKey, ref bytesE);
     
-        decrypted = RSA.Decrypt(cyphertext, keyPair.privateKey);
+        decrypted = RSA.Decrypt(cyphertext, keyPair.privateKey, ref bytesD);
+    }
+
+    private void Check()
+    {
+        if (plaintext.Length == 0) return;
+        Step();
     }
 }
+
+
+
+

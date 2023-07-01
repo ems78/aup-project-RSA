@@ -4,19 +4,19 @@ namespace AlgoritmiUPrimjeniRSA
 {
     public class Key
     {
-        // n, e are public key variables.
+        // n, e su varijable javnog ključa.
         public BigInteger n { get; set; }
         public int e = 0x10001;
         
-        // d is private key variable.
+        // d je varijabla privatnog ključa.
         public readonly BigInteger d;
 
         public KeyType type { get; set; }
 
         public Key(BigInteger n_, KeyType type_, BigInteger d_)
         {
-            // Catching edge cases for invalid input.
-            if (type_ == KeyType.PRIVATE && d_ < 2) { throw new Exception("Constructed as private, but invalid d value provided."); }
+            // Uhvatiti edge caseove za neispravan unos.
+            if (type_ == KeyType.PRIVATE && d_ < 2) { throw new Exception("Neispravna vrijednost d za privatni ključ."); }  
 
             n = n_;
             type = type_;
@@ -25,8 +25,8 @@ namespace AlgoritmiUPrimjeniRSA
 
         public Key(BigInteger n_, KeyType type_)
         {
-            // Catching edge cases for invalid input.
-            if (type_ == KeyType.PRIVATE) { throw new Exception("Constructed as private, but no d value provided."); }
+            // Uhvatiti edge caseove za neispravan unos.
+            if (type_ == KeyType.PRIVATE) { throw new Exception("Nije pružena vrijednost d za privatni ključ."); } 
 
             n = n_;
             type = type_;

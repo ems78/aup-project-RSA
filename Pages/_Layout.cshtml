@@ -12,6 +12,7 @@
     <link href="css/site.css" rel="stylesheet" />
     <link href="Projekt.styles.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     @RenderBody()
@@ -28,5 +29,17 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+    <script>
+    $(document).ready(function() {
+        $("#button1").click(function() {
+            $("#div1").toggle();
+        });
+
+        $("#button2").click(function() {
+            $("#div2").toggle();
+        });
+    });
+    </script>
 </body>
 </html>
+

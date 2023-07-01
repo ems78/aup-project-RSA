@@ -100,7 +100,8 @@ main {
     margin-bottom: 100px;
 }
 
-.step-block {
+.step-block,
+.section {
     display: flex;
     flex-direction: column;
     margin-bottom: 35px;
@@ -145,4 +146,42 @@ h2 {
     background-color: #4d728f69;
     text-align: center;
     border-radius: 15px;
+}
+
+#forma > input {
+    width: 74%;
+    padding: 2px 10px;
+}
+
+#forma > button {
+    background-color: darkslateblue;
+    border-radius: 20px;
+    padding: 2px 20px;
+    color: aliceblue;
+}
+
+.info {
+    padding-top: 30px;
+    font-style: italic;
+}
+
+.more {
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(240, 128, 128, 0.307);
+    padding: 20px;
+    border-radius: 20px;
+    font-style: italic;
+    /*margin: 20px;*/
+}
+
+.zelimznativise {
+    font-size: 1.1em;
+    margin: 0px;
+}
+
+.hline  {
+    width: 50%;
+    height: 1px;
+    background-color: coral;
 }

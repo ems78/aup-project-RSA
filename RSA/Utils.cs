@@ -5,10 +5,10 @@ namespace AlgoritmiUPrimjeniRSA
     class Utils
     {
         /// <summary>
-        /// Sets a bit in a given ref byte, using an index from 0-7 from the right.
+        /// Postavlja bit u prosljeđenom ref byteu, koristeći indeks od 0-7 s desna.
         /// </summary>
-        /// <param name="bitNumFromRight">The index of the bit number from the lesser side of the byte.</param>
-        /// <param name="toSet">The referenced byte to set.</param>
+        /// <param name="bitNumFromRight">Indeks bita od desne strane bytea.</param>
+        /// <param name="toSet">Ref byte za postavljanje.</param>
         public static void SetBitInByte(int bitNumFromRight, ref byte toSet)
         {
             byte mask = (byte)(1 << bitNumFromRight);
@@ -16,8 +16,7 @@ namespace AlgoritmiUPrimjeniRSA
         }
 
         /// <summary>
-        /// Increments the byte array as a whole, by a given amount. Assumes little endian.
-        /// Assumes unsigned randomBytes.
+        /// Inkrementira byte array kao cjelinu, za zadanu količinu. (little endian).
         /// </summary>
         public static void IncrementByteArrayLE(ref byte[] randomBytes, int amt)
         {
@@ -27,8 +26,7 @@ namespace AlgoritmiUPrimjeniRSA
         }
 
         /// <summary>
-        /// Decrements the byte array as a whole, by a given amount. Assumes little endian.
-        /// Assumes unsigned randomBytes.
+        /// Dekrementira byte array kao cjelinu, za zadanu količinu. (little endian).
         /// </summary>
         public static void DecrementByteArrayLE(ref byte[] randomBytes, int amt)
         {

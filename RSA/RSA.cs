@@ -6,12 +6,11 @@ namespace AlgoritmiUPrimjeniRSA
 {
     public static class RSA
     {
-        //public static KeyPair GenerateKeyPair() => GenerateKeyPair(2048);
         public static KeyPair GenerateKeyPair(int bitlenght, ref BigInteger Q_, ref BigInteger P_, ref BigInteger N_, ref BigInteger PHI_, ref BigInteger D_)
         {
-            // Generating two primes, checking if the GCD of (n-1)(p-1) and e is 1.
             BigInteger q, p, n, phi, d = new();
 
+            // Generirati dva prosta broja
             do
             {
                 q = FindPrime(bitlenght / 2);
@@ -22,46 +21,46 @@ namespace AlgoritmiUPrimjeniRSA
                 p = FindPrime(bitlenght / 2);
             } while (p % 0x10001 == 1);
 
-            // Setting n as QP, phi to tortiery function of QP.
             n = q * p;
             phi = (q - 1) * (p - 1);
 
-            // Computing D such that DE = 1 mod phi.
+            // Izračunati D takav da je DE = 1 mod phi.
             d = Maths.ModularInverse(0x10001, phi);
 
+            // Proslijediti varijable u .razor datoteku.
             P_ = p;
             Q_ = q;
             N_ = n;
             PHI_ = phi;
             D_ = d;
 
-            // Returning the key pair.
+            // Vratiti par ključeva.
             return KeyPair.Generate(n, d);
         }
 
 
-        //Finds a prime of the given bit length, to be used as n and p in RSA key calculations.
+        // Pronalazi primarni broj zadane duljine bita, koristi se kao n i p u RSA izračunima ključeva.
         public static BigInteger FindPrime(int bitlength)
         {
             if (bitlength % 8 != 0)
             {
-                throw new Exception("Invalid bit length for key given, cannot generate primes.");
+                throw new Exception("Neispravna duljina bita za ključ, ne mogu se generirati prosti brojevi."); 
             }
 
             byte[] randomBytes = new byte[(bitlength / 8) + 1];
             Maths.rand.NextBytes(randomBytes);
-            // Making the extra byte 0x0 so that the number is always positive.
+            // Postaviti dodatni byte na 0x0 tako da je broj uvijek pozitivan.
             randomBytes[randomBytes.Length - 1] = 0x0;
 
-            //Setting the bottom bit and top two bits of the number.
-            //This ensures the number is odd, and ensures the high bit of N is set when generating keys.
+            // Postaviti donji bit i gornja dva bita broja.
+            // To osigurava da je broj neparan i osigurava da je visoki bit od N postavljen.
             Utils.SetBitInByte(0, ref randomBytes[0]);
             Utils.SetBitInByte(7, ref randomBytes[randomBytes.Length - 2]);
             Utils.SetBitInByte(6, ref randomBytes[randomBytes.Length - 2]);
 
             while (true)
             {
-                //Performing a Rabin-Miller primality test.
+                // Izvršiti Rabin-Miller testa prostosti.
                 bool isPrime = Maths.RabinMillerTest(randomBytes, 40);
                 if (isPrime) break;
                 else
@@ -69,7 +68,7 @@ namespace AlgoritmiUPrimjeniRSA
                     Utils.IncrementByteArrayLE(ref randomBytes, 2);
                     var upper_limit = new Byte[randomBytes.Length];
 
-                    //Clearing upper bit for unsigned, creating upper and lower bounds.
+                    // Postavljanje gornjeg bita za unsigned, stvaranje gornje i donje granice.
                     upper_limit[randomBytes.Length - 1] = 0x0;
                     BigInteger upper_limit_bi = new(upper_limit);
                     BigInteger lower_limit = upper_limit_bi - 20;
@@ -77,86 +76,93 @@ namespace AlgoritmiUPrimjeniRSA
 
                     if (lower_limit < current && current < upper_limit_bi)
                     {
-                        //Failed to find a prime, returning -1.
-                        //Reached limit with no solutions.
+                        // Nije uspjelo pronaći primarni broj, vraća -1.
+                        // Dosegnuta granica bez rješenja.
                         return new BigInteger(-1);
                     }
                 }
             }
 
-            //Returning working BigInt.
+            // Vraća primarni broj.
             return new BigInteger(randomBytes);
         }
 
 
         public static string Encrypt(string text, Key key, ref string byteRAZOR)
         {
-            // Converting the text to bytes.
+            // Pretvoriti tekst u byteove.
             byte[] bytes = Encoding.ASCII.GetBytes(text);
 
+            // Proslijediti konvertirane byteove u .razor
             foreach (var b in bytes)
             {
                 byteRAZOR += b.ToString();
             }
 
-            // Encrypting the bytes.
+            // Enkriptirati byteove.
             byte[] encrypted = EncryptBytes(bytes, key);
 
-            // Converting the encrypted bytes to a string.
+            // Pretvaranje enkriptiranih byteova u string.
             return Convert.ToBase64String(encrypted);
         }
 
 
-        // Encrypts a set of bytes when given a public key.
+        // Enkriptira set byteova sa zadanim ključem.
         public static byte[] EncryptBytes(byte[] bytes, Key public_key)
         {
-            //Checking that the size of the bytes is less than n, and greater than 1.
+            // Provjeriti da je veličina byteova manja od n, a veća od 1.
             if (1 > bytes.Length || bytes.Length >= public_key.n.ToByteArray().Length)
             {
                 throw new Exception("Bytes given are longer than length of key element n (" + bytes.Length + " bytes).");
             }
 
-            //Padding the array to unsign.
+            // Dodati padding u array.
             byte[] bytes_padded = new byte[bytes.Length + 2];
             Array.Copy(bytes, bytes_padded, bytes.Length);
             bytes_padded[bytes_padded.Length - 1] = 0x00;
 
-            //Setting high byte right before the data, to prevent data loss.
+            // Postaviti visoki byte prije podataka, marker byte.
             bytes_padded[bytes_padded.Length - 2] = 0xFF;
 
-            //Computing as a BigInteger the encryption operation.
+            // Izračunati kao BigInteger operaciju enkripcije.
             var cipher_bigint = new BigInteger();
             var padded_bigint = new BigInteger(bytes_padded);
             cipher_bigint = BigInteger.ModPow(padded_bigint, public_key.e, public_key.n);
 
-            //Returning the byte array of encrypted bytes.
+            // Vraća byte arraya enkriptiranih byteova.
             return cipher_bigint.ToByteArray();
         }
 
 
-        public static string Decrypt(string text, Key key)
+        public static string Decrypt(string text, Key key, ref string byteRAZOR)
         {
             byte[] bytes = Convert.FromBase64String(text);
+
+            foreach (var b in bytes)
+            {
+                byteRAZOR += b.ToString();
+            }
+            
             byte[] ciphed = DecryptBytes(bytes, key);
             return Encoding.ASCII.GetString(ciphed);
         }
 
 
-        // Deryptsa set of bytes when given a private key.
+        // Dekriptira set byteova sa zadanim tajnim ključem.
         public static byte[] DecryptBytes(byte[] bytes, Key private_key)
         {
-            //Checking that the private key is legitimate, and contains d.
+            // Provjeriti da je privatni ključ legitiman i sadrži d.
             if (private_key.type != KeyType.PRIVATE)
             {
-                throw new Exception("Private key given for decrypt is classified as non-private in instance.");
+                throw new Exception("Privatni ključ za dekriptiranje klasificiran je kao neprivatni u instanci."); 
             }
 
-            //Decrypting.
+            // Dekriptirati.
             var plain_bigint = new BigInteger();
             var padded_bigint = new BigInteger(bytes);
             plain_bigint = BigInteger.ModPow(padded_bigint, private_key.d, private_key.n);
 
-            //Removing all padding bytes, including the marker 0xFF.
+            // Uklanjanje svih padding byteova.
             byte[] plain_bytes = plain_bigint.ToByteArray();
             int lengthToCopy = -1;
             for (int i = plain_bytes.Length - 1; i >= 0; i--)
@@ -168,13 +174,13 @@ namespace AlgoritmiUPrimjeniRSA
                 }
             }
 
-            //Checking for a failure to find marker byte.
+            // Provjera neuspjeha u pronalaženju marker bytea.
             if (lengthToCopy == -1)
             {
-                throw new Exception("Marker byte for padding (0xFF) not found in plain bytes.\nPossible Reasons:\n1: PAYLOAD TOO LARGE\n2: KEYS INVALID\n3: ENCRYPT/DECRYPT FUNCTIONS INVALID");
-            }
+                throw new Exception("Marker byte za padding (0xFF) nije pronađen u plain byteovima.\nMogući razlozi:\n1: PAYLOAD PREVELIK\n2: NEISPRAVNI KLJUČEVI\n3: NEISPRAVNE ENCRYPT/DECRYPT FUNCKIJE"); 
+            }                                                                                               
 
-            //Copying into return array, returning.
+            // Kopirati u povratni array.
             byte[] return_array = new byte[lengthToCopy];
             Array.Copy(plain_bytes, return_array, lengthToCopy);
             return return_array;
