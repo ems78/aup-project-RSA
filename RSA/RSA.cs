@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Components;
 
 namespace AlgoritmiUPrimjeniRSA
 {
+
+    // ##################################################################
+    // Izvorni kod za RSA algoritam preuzet od korisnika c272 na GitHubu.
+    // Repozitorij: https://github.com/c272/SharpRSA.git
+    // ##################################################################
     public static class RSA
     {
         public static KeyPair GenerateKeyPair(int bitlenght, ref BigInteger Q_, ref BigInteger P_, ref BigInteger N_, ref BigInteger PHI_, ref BigInteger D_)
